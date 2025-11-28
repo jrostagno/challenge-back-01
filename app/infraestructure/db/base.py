@@ -1,4 +1,4 @@
-from sqlalchemy.ext.declarative import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase
 
 #Base= DeclarativeBase()
 
