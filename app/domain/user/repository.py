@@ -3,6 +3,8 @@ from app.domain.user.entities import User
 from pydantic import EmailStr
 
 
+
+
 class UserRepository(ABC):
 
     @abstractmethod
