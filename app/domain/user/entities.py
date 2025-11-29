@@ -1,10 +1,13 @@
-from pydantic import BaseModel, EmailStr
+from dataclasses import dataclass
 from datetime import datetime
 
-class User(BaseModel):
-    id: int
+
+
+@dataclass  
+class User:
     name: str
-    email: EmailStr
-    password: str
+    email: str
+    password_hash: str
     created_at: datetime
     updated_at: datetime
+    id: int = None
