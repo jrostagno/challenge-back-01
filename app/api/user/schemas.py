@@ -1,15 +1,29 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserBase(BaseModel):
-    name: str
-    email: EmailStr
+    name: str = Field(
+        ...,
+        min_length=3,
+        max_length=100,
+        description="The name of the user",
+        examples=["John Doe"],
+    )
+    email: EmailStr = Field(
+        ..., description="The email of the user", examples=["john.doe@example.com"]
+    )
 
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=100,
+        description="The password of the user",
+        examples=["password123"],
+    )
 
 
 class UserInDB(UserBase):
