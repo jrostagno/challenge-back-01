@@ -31,16 +31,8 @@ def create_user(
     user_in: UserCreate, user_service: UserService = Depends(get_user_services)
 ):
 
-    now = datetime.now()
-
-    user_entity = User(
-        name=user_in.name,
-        email=str(user_in.email),
-        password_hash=user_in.password,
-        created_at=now,
-        updated_at=now,
+    user: User = user_service.create_user_with_password(
+        name=user_in.name, email=str(user_in.email), password=user_in.password
     )
 
-    created_user = user_service.create_user(user_entity)
-
-    return UserResponse.model_validate(created_user)
+    return UserResponse.model_validate(user)

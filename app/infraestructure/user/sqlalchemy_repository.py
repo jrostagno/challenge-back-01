@@ -33,3 +33,17 @@ class SQLAlchemyUserRepository(UserRepository):
             created_at=orm_user.created_at,
             updated_at=orm_user.updated_at,
         )
+
+    def get_user_by_email(self, email: str) -> User | None:
+        orm_user = self.session.query(UserORM).filter(UserORM.email == email).first()
+        if not orm_user:
+            return None
+
+        return User(
+            user_id=orm_user.user_id,
+            name=orm_user.name,
+            email=orm_user.email,
+            password_hash=orm_user.password_hash,
+            created_at=orm_user.created_at,
+            updated_at=orm_user.updated_at,
+        )
