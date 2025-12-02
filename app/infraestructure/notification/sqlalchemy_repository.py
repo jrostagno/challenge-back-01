@@ -14,6 +14,7 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
     @staticmethod
     def to_domain(orm: NotificationORM) -> Notification:
         return Notification(
+            notification_id=orm.notification_id,
             user_id=orm.user_id,
             title=orm.title,
             content=orm.content,
@@ -71,3 +72,14 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
         self.session.refresh(notification_to_update)
 
         return self.to_domain(notification_to_update)
+
+    def delete_notification(self, notification_id: int) -> None:
+        notification_to_delete: Optional[NotificationORM] = self.session.get(
+            NotificationORM, notification_id
+        )
+
+        if notification_to_delete is None:
+            raise ValueError(f"Notification with id {notification_id} not found")
+
+        self.session.delete(notification_to_delete)
+        self.session.commit()
