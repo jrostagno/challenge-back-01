@@ -1,6 +1,8 @@
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.domain.user.entities import User
+from app.domain.user.exceptions import UserAlreadyExistsError, UserRepositoryError
 from app.domain.user.repository import UserRepository
 from app.infraestructure.db.models.user_model import UserORM
 
@@ -20,8 +22,20 @@ class SQLAlchemyUserRepository(UserRepository):
             updated_at=user.updated_at,
         )
 
-        self.session.add(orm_user)
-        self.session.commit()
+        try:
+            self.session.add(orm_user)
+            self.session.commit()
+
+        except IntegrityError as e:
+            self.session.rollback()
+            raise UserAlreadyExistsError(
+                f"User with email {user.email} already exists"
+            ) from e
+
+        except SQLAlchemyError as e:
+            self.session.rollback()
+            raise UserRepositoryError(f"User repository error: {e}") from e
+
         self.session.refresh(orm_user)
 
         # ORM -> Domain
@@ -35,7 +49,15 @@ class SQLAlchemyUserRepository(UserRepository):
         )
 
     def get_user_by_email(self, email: str) -> User | None:
-        orm_user = self.session.query(UserORM).filter(UserORM.email == email).first()
+
+        try:
+            orm_user = (
+                self.session.query(UserORM).filter(UserORM.email == email).first()
+            )
+
+        except IntegrityError as e:
+            raise UserRepositoryError(f"User repository error: {e}") from e
+
         if not orm_user:
             return None
 
