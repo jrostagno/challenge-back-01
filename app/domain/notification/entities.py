@@ -17,6 +17,15 @@ class NotificationStatus(str, Enum):
 
 
 @dataclass
+class NotificationUpdate:
+    user_id: int
+    title: str
+    content: str
+    channel: NotificationChannel
+    target: str
+
+
+@dataclass
 class Notification:
     user_id: int
     title: str

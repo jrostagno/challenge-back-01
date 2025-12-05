@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.api.auth.auth_controller import router as auth_router
 from app.api.exception_handlers import register_exception_handlers
+from app.api.notification.notification_controller import router as notification_router
 from app.api.user.user_controller import router as user_router
 from app.infraestructure.db.base import Base
 from app.infraestructure.db.models.notification_model import NotificationORM
@@ -16,7 +17,7 @@ def create_app() -> FastAPI:
     # En producción, usar migraciones con Alembic
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-
+    app.include_router(notification_router)
     app.include_router(user_router)
     app.include_router(auth_router)
 

@@ -56,6 +56,6 @@ class NotificationResponse(NotificationBase):
     user_id: int
     created_at: datetime
     updated_at: datetime
-    model_config = ConfigDict(from_attributes=True)
-    ent_at: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
     error_message: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)

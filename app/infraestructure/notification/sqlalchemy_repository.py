@@ -1,10 +1,10 @@
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.domain.notification.entities import Notification
+from app.domain.notification.entities import Notification, NotificationUpdate
 from app.domain.notification.exceptions import (
     NotificationConflictError,
     NotificationNotFoundError,
@@ -100,33 +100,37 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
         return self.to_domain(notification_orm)
 
     def update_notification(self, notification: Notification) -> Notification:
-
         try:
-            notification_to_update: Optional[NotificationORM] = self.session.get(
-                NotificationORM, notification.notification_id
+            stmt = (
+                update(NotificationORM)
+                .where(NotificationORM.notification_id == notification.notification_id)
+                .values(
+                    user_id=notification.user_id,
+                    title=notification.title,
+                    content=notification.content,
+                    channel=notification.channel,
+                    status=notification.status,
+                    target=notification.target,
+                    created_at=notification.created_at,
+                    updated_at=notification.updated_at,
+                    sent_at=notification.sent_at,
+                    error_message=notification.error_message,
+                )
+                .returning(NotificationORM)
             )
 
-        except SQLAlchemyError as e:
-            raise NotificationRepositoryError(
-                f"Notification repository error: {e}"
-            ) from e
+            result = self.session.execute(stmt)
+            notification_orm = result.scalar_one_or_none()
 
-        if notification_to_update is None:
-            raise NotificationNotFoundError(
-                f"Notification with id {notification.notification_id} not found"
-            )
+            if notification_orm is None:
+                raise NotificationNotFoundError(
+                    f"Notification with id {notification.notification_id} not found"
+                )
 
-        notification_to_update.title = notification.title
-        notification_to_update.content = notification.content
-        notification_to_update.channel = notification.channel
-        notification_to_update.status = notification.status
-        notification_to_update.target = notification.target
-        notification_to_update.updated_at = notification.updated_at
-        notification_to_update.sent_at = notification.sent_at  # type: ignore[assignment]
-        notification_to_update.error_message = notification.error_message  # type: ignore[assignment]
-
-        try:
             self.session.commit()
+
+            return self.to_domain(notification_orm)
+
         except IntegrityError as e:
             self.session.rollback()
             raise NotificationConflictError(
@@ -137,10 +141,6 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
             raise NotificationRepositoryError(
                 f"Notification repository error: {e}"
             ) from e
-
-        self.session.refresh(notification_to_update)
-
-        return self.to_domain(notification_to_update)
 
     def delete_notification(self, notification_id: int) -> None:
 

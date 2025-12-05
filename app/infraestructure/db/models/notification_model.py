@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
@@ -24,9 +23,5 @@ class NotificationORM(Base):
         DateTime, default=func.now(), index=True
     )
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now, index=True)
-    sent_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime, nullable=True, index=True
-    )
-    error_message: Mapped[Optional[str]] = mapped_column(
-        String, nullable=True, index=True
-    )
+    sent_at: Mapped[datetime] = mapped_column(DateTime, nullable=True, index=True)
+    error_message: Mapped[str] = mapped_column(String, nullable=True, index=True)
