@@ -48,7 +48,7 @@ def login(
         )
 
     access_token = create_access_token(
-        data={"sub": user.user_id},
+        data={"sub": str(user.user_id)},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     return TokenResponse(access_token=access_token, token_type="bearer")

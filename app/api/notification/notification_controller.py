@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
@@ -11,12 +11,17 @@ from app.domain.notification.entities import (
     NotificationUpdate,
 )
 from app.domain.notification.service import NotificationService
+from app.infraestructure.auth.security import get_current_user
 from app.infraestructure.db.session import SessionLocal
 from app.infraestructure.notification.sqlalchemy_repository import (
     SQLAlchemyNotificationRepository,
 )
 
-router = APIRouter(prefix="/notification", tags=["notifications"])
+router = APIRouter(
+    prefix="/notification",
+    tags=["notifications"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 def get_session():
@@ -37,14 +42,16 @@ def get_notification_services(db: Session = Depends(get_session)):
 )
 def create_notification(
     notification: NotificationCreate,
-    user_id: int,
     notification_service: NotificationService = Depends(get_notification_services),
+    user: dict = Depends(get_current_user),
 ):
     now = datetime.now()
 
+    print(f"User: {user}")
+
     new_notification = Notification(
         notification_id=None,
-        user_id=user_id,
+        user_id=user["user_id"],
         title=notification.title,
         content=notification.content,
         channel=notification.channel,
@@ -69,12 +76,12 @@ def create_notification(
 )
 def change_notification(
     notification_id: int,
-    user_id: int,
     notification: NotificationCreate,
     notification_service: NotificationService = Depends(get_notification_services),
+    user: dict = Depends(get_current_user),
 ):
     notification_to_update = NotificationUpdate(
-        user_id=user_id,
+        user_id=user["user_id"],
         title=notification.title,
         content=notification.content,
         channel=notification.channel,
@@ -127,3 +134,8 @@ def get_all_notifications(
         NotificationResponse.model_validate(notification)
         for notification in notifications
     ]
+
+
+@router.get("/secure")
+def secure_endpoint(user: dict = Depends(get_current_user)):
+    return {"message": "Acceso con token OK", "user": user}

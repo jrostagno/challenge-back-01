@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
+from jose.exceptions import ExpiredSignatureError, JWTError
 from passlib.context import CryptContext
 
 SECRET_KEY = "super-secret-key-change-this"
@@ -9,7 +12,18 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def raise_expired_token():
+    return HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token expirado",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
 
 def hash_password(password: str) -> str:
@@ -28,6 +42,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     else:
         expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
+
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -38,3 +53,40 @@ def decode_access_token(token: str) -> dict:
     """
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     return payload
+
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+
+    try:
+        payload = decode_access_token(token)
+
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token inválido: falta 'sub'",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        return {"user_id": int(user_id)}
+
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expirado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    except JWTError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Token inválido: {str(e)}",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Error de autenticación: {str(e)}",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
