@@ -11,7 +11,7 @@ from app.infraestructure.auth.security import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     create_access_token,
 )
-from app.infraestructure.db.session import SessionLocal
+from app.infraestructure.db.session import get_session
 from app.infraestructure.user.sqlalchemy_repository import SQLAlchemyUserRepository
 
 router = APIRouter(
@@ -20,14 +20,6 @@ router = APIRouter(
 )
 
 auth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
-
-
-def get_session():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 def get_user_service(db: Session = Depends(get_session)) -> UserService:

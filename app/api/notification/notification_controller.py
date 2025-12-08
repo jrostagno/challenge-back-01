@@ -12,7 +12,7 @@ from app.domain.notification.entities import (
 )
 from app.domain.notification.service import NotificationService
 from app.infraestructure.auth.security import get_current_user
-from app.infraestructure.db.session import SessionLocal
+from app.infraestructure.db.session import get_session
 from app.infraestructure.notification.sqlalchemy_repository import (
     SQLAlchemyNotificationRepository,
 )
@@ -22,14 +22,6 @@ router = APIRouter(
     tags=["notifications"],
     dependencies=[Depends(get_current_user)],
 )
-
-
-def get_session():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 def get_notification_services(db: Session = Depends(get_session)):
