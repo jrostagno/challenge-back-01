@@ -13,17 +13,18 @@ from app.infraestructure.db.session import engine
 def create_app() -> FastAPI:
     app = FastAPI(title="Backend Take-home")
 
-    # Eliminar tablas existentes y recrearlas (solo para desarrollo)
-    # En producción, usar migraciones con Alembic
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
     app.include_router(notification_router)
     app.include_router(user_router)
     app.include_router(auth_router)
 
-    # Exception handlers
     register_exception_handlers(app)
     return app
 
 
 app = create_app()
+
+
+# ✅ SOLO PARA DESARROLLO MANUAL, NO PARA TESTS
+if __name__ == "__main__":
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)

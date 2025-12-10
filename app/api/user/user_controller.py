@@ -4,18 +4,10 @@ from sqlalchemy.orm import Session
 from app.api.user.schemas import UserCreate, UserResponse
 from app.domain.user.entities import User
 from app.domain.user.service import UserService
-from app.infraestructure.db.session import SessionLocal
+from app.infraestructure.db.session import get_session
 from app.infraestructure.user.sqlalchemy_repository import SQLAlchemyUserRepository
 
 router = APIRouter(prefix="/users", tags=["users"])
-
-
-def get_session():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 def get_user_services(db: Session = Depends(get_session)):

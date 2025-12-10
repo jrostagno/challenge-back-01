@@ -1,18 +1,27 @@
 import os
 
 import pytest
+from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import Session
 
 from app.infraestructure.db.base import Base
 from app.infraestructure.db.session import get_session
 from app.main import app
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+load_dotenv(".env.test")
 
-engine = create_engine(DATABASE_URL)
-TestingSessionLocal = sessionmaker(
+DATABASE_URL_TEST = os.getenv("DATABASE_URL_TEST")
+
+if not DATABASE_URL_TEST:
+    raise RuntimeError("DATABASE_URL_TEST no está seteada. ¿Cargaste bien env.test?")
+
+engine = create_engine(DATABASE_URL_TEST)
+
+
+TestingSessionLocal = sessionmaker[Session](
     autocommit=False,
     autoflush=False,
     bind=engine,
@@ -38,6 +47,50 @@ def db_session():
     session.close()
     transaction.rollback()
     connection.close()
+
+
+@pytest.fixture()
+def user_credentials():
+    """
+    Fixture: Return a dictionary with the user credentials
+    """
+    return {"name": "Javier", "email": "javier@mail.com", "password": "pass1234"}
+
+
+@pytest.fixture()
+def auth_headers(client, user_credentials):
+
+    res_user = client.post("/users/", json=user_credentials)
+
+    assert res_user.status_code == 200
+
+    res_login = client.post(
+        "/auth/login",
+        json={
+            "email": user_credentials["email"],
+            "password": user_credentials["password"],
+        },
+    )
+    assert res_login.status_code == 200
+    data = res_login.json()
+    access_token = data["access_token"]
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest.fixture
+def created_notification(client, auth_headers):
+    res = client.post(
+        "/notification/",
+        headers=auth_headers,
+        json={
+            "title": "original",
+            "channel": "email",
+            "content": "contenido original",
+            "target": "test@mail.com",
+        },
+    )
+    assert res.status_code == 200
+    return res.json()
 
 
 # Fixture: Override get_db from fastapi

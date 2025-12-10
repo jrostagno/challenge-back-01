@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 
 from app.domain.notification.exceptions import (
     NotificationConflictError,
@@ -15,7 +15,9 @@ from app.domain.user.exceptions import (
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(NotificationNotFoundError)
     async def notification_not_found_handler(request, exc):
-        raise HTTPException(status_code=401, detail="Notification not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found"
+        )
 
     @app.exception_handler(NotificationConflictError)
     async def notification_conflict_handler(request, exc):

@@ -12,7 +12,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB_TEST}
     restart: always
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_test:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  postgres_data_test:
