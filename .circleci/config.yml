@@ -1,0 +1,40 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/python:3.12
+        environment:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/notifications_test
+      - image: cimg/postgres:15.15
+        environment:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: notifications_test
+
+    steps:
+      - checkout
+
+      - run:
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+
+      - run:
+          name: Wait for Postgres
+          command: |
+            for i in $(seq 1 30); do
+              pg_isready -h localhost -p 5432 && break
+              sleep 1
+            done
+
+      - run:
+          name: Run tests
+          command: |
+            pytest -v
+
+workflows:
+  build-and-test:
+    jobs:
+      - test
