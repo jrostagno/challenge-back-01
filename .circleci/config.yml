@@ -6,7 +6,7 @@ jobs:
       - image: cimg/python:3.12
         environment:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/notifications_test
-      - image: cimg/postgres:15.15
+      - image: cimg/postgres:15.6
         environment:
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_password
