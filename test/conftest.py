@@ -11,14 +11,13 @@ from app.infraestructure.db.base import Base
 from app.infraestructure.db.session import get_session
 from app.main import app
 
-load_dotenv(".env.test")
+load_dotenv(".env.test", override=False)
 
-DATABASE_URL_TEST = os.getenv("DATABASE_URL_TEST")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL no está seteada.")
 
-if not DATABASE_URL_TEST:
-    raise RuntimeError("DATABASE_URL_TEST no está seteada. ¿Cargaste bien env.test?")
-
-engine = create_engine(DATABASE_URL_TEST)
+engine = create_engine(DATABASE_URL)
 
 
 TestingSessionLocal = sessionmaker[Session](
