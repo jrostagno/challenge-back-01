@@ -8,6 +8,8 @@ or update. Every request must only accept this `Content-type: application/json`.
 
 ### Badges
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/8UaiykmR7N7WoqrsjC7KCL/U7nKyJ9cdRMXgq46PTBHgr/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/8UaiykmR7N7WoqrsjC7KCL/U7nKyJ9cdRMXgq46PTBHgr/tree/main)
+
 ### How to run locally coveralls
 
 ```
