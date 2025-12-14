@@ -33,9 +33,11 @@ jobs:
             done
 
       - run:
-          name: Run tests
+          name: Run tests with coverage
           command: |
-            pytest -v
+            pytest -v --cov=app --cov-report=xml
+
+      - coveralls/upload
 
 workflows:
   build-and-test:
