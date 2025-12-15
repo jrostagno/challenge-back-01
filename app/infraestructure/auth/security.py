@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -7,7 +8,8 @@ from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTError
 from passlib.context import CryptContext
 
-SECRET_KEY = "super-secret-key-change-this"
+SECRET_KEY = os.getenv("JWT_SECRET", "dev-insecure-secret")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
