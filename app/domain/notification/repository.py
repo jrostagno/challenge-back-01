@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 
 from app.domain.notification.entities import Notification
 
@@ -22,5 +21,5 @@ class NotificationRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all_notifications(self) -> List[Notification]:
+    def get_all_notifications(self) -> list[Notification]:
         pass

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 
 class NotificationChannel(str, Enum):
@@ -35,6 +34,6 @@ class Notification:
     status: NotificationStatus
     created_at: datetime
     updated_at: datetime
-    sent_at: Optional[datetime] = None
-    error_message: Optional[str] = None
-    notification_id: Optional[int] = None
+    sent_at: datetime | None = None
+    error_message: str | None = None
+    notification_id: int | None = None

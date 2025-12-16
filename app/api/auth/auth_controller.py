@@ -19,15 +19,22 @@ router = APIRouter(
     tags=["auth"],
 )
 
+_DEFAULT_SESSION_DEPENDENCY = Depends(get_session)
 
-def get_user_service(db: Session = Depends(get_session)) -> UserService:
+
+def get_user_service(db: Session = _DEFAULT_SESSION_DEPENDENCY) -> UserService:
     repository = SQLAlchemyUserRepository(db)
     return UserService(repository)
 
 
+_DEFAULT_USER_SERVICE_DEPENDENCY = Depends(get_user_service)
+_DEFAULT_OAUTH2_FORM_DEPENDENCY = Depends()
+
+
 @router.post("/login", response_model=TokenResponse)
 def login(
-    credentials: LoginRequest, user_service: UserService = Depends(get_user_service)
+    credentials: LoginRequest,
+    user_service: UserService = _DEFAULT_USER_SERVICE_DEPENDENCY,
 ):
     user = user_service.authenticate(
         email=str(credentials.email), password=credentials.password
@@ -46,8 +53,8 @@ def login(
 
 @router.post("/token", response_model=TokenResponse)
 def token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    user_service: UserService = Depends(get_user_service),
+    form_data: OAuth2PasswordRequestForm = _DEFAULT_OAUTH2_FORM_DEPENDENCY,
+    user_service: UserService = _DEFAULT_USER_SERVICE_DEPENDENCY,
 ):
     user = user_service.authenticate(
         email=form_data.username,  # Swagger usa "username"

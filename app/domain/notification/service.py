@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 
 from app.domain.notification.entities import Notification, NotificationUpdate
 from app.domain.notification.exceptions import NotificationNotFoundError
@@ -34,7 +33,7 @@ class NotificationService:
 
         return self.notification_repository.update_notification(notification_to_update)
 
-    def getAll_notifications(self) -> List[Notification]:
+    def getAll_notifications(self) -> list[Notification]:
         return self.notification_repository.get_all_notifications()
 
     def get_notification_byID(self, notification_id: int) -> Notification | None:

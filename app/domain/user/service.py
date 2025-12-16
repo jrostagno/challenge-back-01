@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.domain.user.entities import User
 from app.domain.user.repository import UserRepository
@@ -16,8 +16,8 @@ class UserService:
             name=name,
             email=email,
             password_hash=password_hash,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         return self.user_repository.create_user(user)
 

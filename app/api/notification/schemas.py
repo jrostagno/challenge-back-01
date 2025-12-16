@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -45,8 +44,8 @@ class NotificationInDB(NotificationBase):
     status: NotificationStatus
     created_at: datetime
     updated_at: datetime
-    sent_at: Optional[datetime] = None
-    error_message: Optional[str] = None
+    sent_at: datetime | None = None
+    error_message: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -56,6 +55,6 @@ class NotificationResponse(NotificationBase):
     user_id: int
     created_at: datetime
     updated_at: datetime
-    sent_at: Optional[datetime] = None
-    error_message: Optional[str] = None
+    sent_at: datetime | None = None
+    error_message: str | None = None
     model_config = ConfigDict(from_attributes=True)

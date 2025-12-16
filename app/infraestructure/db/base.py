@@ -1,6 +1,6 @@
 from sqlalchemy.orm import DeclarativeBase
 
-#Base= DeclarativeBase()
+# Base= DeclarativeBase()
 
 
 class Base(DeclarativeBase):

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
@@ -23,10 +22,16 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)],
 )
 
+_DEFAULT_SESSION_DEPENDENCY = Depends(get_session)
 
-def get_notification_services(db: Session = Depends(get_session)):
+
+def get_notification_services(db: Session = _DEFAULT_SESSION_DEPENDENCY):
     repository = SQLAlchemyNotificationRepository(db)
     return NotificationService(repository)
+
+
+_DEFAULT_NOTIFICATION_SERVICE_DEPENDENCY = Depends(get_notification_services)
+_DEFAULT_CURRENT_USER_DEPENDENCY = Depends(get_current_user)
 
 
 @router.post(
@@ -34,8 +39,8 @@ def get_notification_services(db: Session = Depends(get_session)):
 )
 def create_notification(
     notification: NotificationCreate,
-    notification_service: NotificationService = Depends(get_notification_services),
-    user: dict = Depends(get_current_user),
+    notification_service: NotificationService = _DEFAULT_NOTIFICATION_SERVICE_DEPENDENCY,
+    user: dict = _DEFAULT_CURRENT_USER_DEPENDENCY,
 ):
     now = datetime.now()
 
@@ -69,8 +74,8 @@ def create_notification(
 def change_notification(
     notification_id: int,
     notification: NotificationCreate,
-    notification_service: NotificationService = Depends(get_notification_services),
-    user: dict = Depends(get_current_user),
+    notification_service: NotificationService = _DEFAULT_NOTIFICATION_SERVICE_DEPENDENCY,
+    user: dict = _DEFAULT_CURRENT_USER_DEPENDENCY,
 ):
     notification_to_update = NotificationUpdate(
         user_id=user["user_id"],
@@ -93,7 +98,7 @@ def change_notification(
 )
 def delete_notification(
     notification_id: int,
-    notification_service: NotificationService = Depends(get_notification_services),
+    notification_service: NotificationService = _DEFAULT_NOTIFICATION_SERVICE_DEPENDENCY,
 ):
     notification_service.delete_notification(notification_id)
 
@@ -107,7 +112,7 @@ def delete_notification(
 )
 def get_notification(
     notification_id: int,
-    notification_service: NotificationService = Depends(get_notification_services),
+    notification_service: NotificationService = _DEFAULT_NOTIFICATION_SERVICE_DEPENDENCY,
 ):
     notification = notification_service.get_notification_byID(notification_id)
     return NotificationResponse.model_validate(notification)
@@ -115,11 +120,11 @@ def get_notification(
 
 @router.get(
     "/",
-    response_model=List[NotificationResponse],
+    response_model=list[NotificationResponse],
     description="Get all notifications",
 )
 def get_all_notifications(
-    notification_service: NotificationService = Depends(get_notification_services),
+    notification_service: NotificationService = _DEFAULT_NOTIFICATION_SERVICE_DEPENDENCY,
 ):
     notifications = notification_service.getAll_notifications()
     return [
@@ -129,5 +134,5 @@ def get_all_notifications(
 
 
 @router.get("/secure")
-def secure_endpoint(user: dict = Depends(get_current_user)):
+def secure_endpoint(user: dict = _DEFAULT_CURRENT_USER_DEPENDENCY):
     return {"message": "Acceso con token OK", "user": user}

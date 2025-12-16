@@ -1,10 +1,8 @@
-from typing import List, Optional
-
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.domain.notification.entities import Notification, NotificationUpdate
+from app.domain.notification.entities import Notification
 from app.domain.notification.exceptions import (
     NotificationConflictError,
     NotificationNotFoundError,
@@ -34,7 +32,7 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
             error_message=orm.error_message,
         )
 
-    def get_all_notifications(self) -> List[Notification]:
+    def get_all_notifications(self) -> list[Notification]:
 
         try:
             notifications_orm = (
@@ -51,7 +49,7 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
 
         try:
 
-            notification_to_find: Optional[NotificationORM] = self.session.get(
+            notification_to_find: NotificationORM | None = self.session.get(
                 NotificationORM, notification_id
             )
         except SQLAlchemyError as e:
@@ -145,7 +143,7 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
     def delete_notification(self, notification_id: int) -> None:
 
         try:
-            notification_to_delete: Optional[NotificationORM] = self.session.get(
+            notification_to_delete: NotificationORM | None = self.session.get(
                 NotificationORM, notification_id
             )
 

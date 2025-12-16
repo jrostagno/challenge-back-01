@@ -9,16 +9,21 @@ from app.infraestructure.user.sqlalchemy_repository import SQLAlchemyUserReposit
 
 router = APIRouter(prefix="/users", tags=["users"])
 
+_DEFAULT_SESSION_DEPENDENCY = Depends(get_session)
 
-def get_user_services(db: Session = Depends(get_session)):
+
+def get_user_services(db: Session = _DEFAULT_SESSION_DEPENDENCY):
     repository = SQLAlchemyUserRepository(db)
     return UserService(repository)
+
+
+_DEFAULT_USER_SERVICE_DEPENDENCY = Depends(get_user_services)
 
 
 # Endpoints
 @router.post("/", response_model=UserResponse, description="Create a new user")
 def create_user(
-    user_in: UserCreate, user_service: UserService = Depends(get_user_services)
+    user_in: UserCreate, user_service: UserService = _DEFAULT_USER_SERVICE_DEPENDENCY
 ):
 
     user: User = user_service.create_user_with_password(

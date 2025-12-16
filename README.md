@@ -12,10 +12,8 @@ to manage **users** and their **notifications**.
 
 ## Deployed App
 
-> If you deployed it (Render/Heroku), add the link here:
-
-- API: `https://<your-app-domain>`
-- Swagger: `https://<your-app-domain>/docs`
+- **Swagger (OpenAPI docs):**  
+  [https://challenge-notification-a633a6dac8ad.herokuapp.com/docs](https://challenge-notification-a633a6dac8ad.herokuapp.com/docs)
 
 ---
 
@@ -118,6 +116,13 @@ An example file is provided:
 ## Route
 
 - Local: [API Swagger](http://localhost:8000/docs)
+
+### Formatting & Linting
+
+```bash
+black .
+ruff check .
+```
 
 ## Env vars should be defined
 
