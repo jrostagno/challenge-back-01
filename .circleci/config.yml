@@ -23,6 +23,17 @@ jobs:
           command: |
             python -m pip install --upgrade pip
             pip install -r requirements.txt
+            pip install ruff black
+
+      - run:
+          name: Ruff (lint)
+          command: |
+            ruff check .
+
+      - run:
+          name: Black (format check)
+          command: |
+            black --check .
 
       - run:
           name: Wait for Postgres
