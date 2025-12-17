@@ -23,6 +23,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER_TEST}:${POSTGRES_PASSWORD_TEST}@db_test:5432/${POSTGRES_DB_TEST}
-    command: ["pytest", "-v"]
+    command: >
+      sh -c "alembic -c app/alembic.ini upgrade head && pytest -v"
 
 

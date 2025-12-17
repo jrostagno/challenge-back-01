@@ -75,6 +75,16 @@ chmod +x ./up_test.sh
 ./up_test.sh
 ```
 
+## Database Migrations
+
+This project uses **Alembic** to manage database schema migrations.
+
+### Run migrations
+
+```bash
+alembic upgrade head
+```
+
 ## Areas to improve
 
 - Move test data to external fixtures or factory modules

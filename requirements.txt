@@ -47,3 +47,4 @@ pytest
 pytest-asyncio
 httpx
 pytest-cov
+alembic
