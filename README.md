@@ -10,7 +10,7 @@ to manage **users** and their **notifications**.
 
 ---
 
-## Deployed App
+## Deployed App at Heroku
 
 - **Swagger (OpenAPI docs):**  
   [https://challenge-notification-a633a6dac8ad.herokuapp.com/docs](https://challenge-notification-a633a6dac8ad.herokuapp.com/docs)
@@ -91,12 +91,6 @@ alembic upgrade head
 - Generic method should be used to mock endpoints
 - Error handling could be improved (I.E handle already existing user error)
 - Add seed data for easier local testing
-- Replace ORM synchronize behavior with proper database migrations
-- Add production deployment (Render / Railway / AWS)
-
-## Errors to be fixed
-
-- Docker app is not running properly
 
 ## Decisions made
 
