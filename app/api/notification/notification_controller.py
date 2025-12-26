@@ -9,9 +9,11 @@ from app.domain.notification.entities import (
     NotificationStatus,
     NotificationUpdate,
 )
+from app.domain.notification.ports.notification_sender import NotificationSender
 from app.domain.notification.service import NotificationService
 from app.infraestructure.auth.security import get_current_user
 from app.infraestructure.db.session import get_session
+from app.infraestructure.delivery.http_notification_sender import HttpNotificationSender
 from app.infraestructure.notification.sqlalchemy_repository import (
     SQLAlchemyNotificationRepository,
 )
@@ -25,9 +27,19 @@ router = APIRouter(
 _DEFAULT_SESSION_DEPENDENCY = Depends(get_session)
 
 
-def get_notification_services(db: Session = _DEFAULT_SESSION_DEPENDENCY):
+def get_notification_sender() -> NotificationSender:
+    return HttpNotificationSender()
+
+
+_DEFAULT_SENDER_DEPENDENCY = Depends(get_notification_sender)
+
+
+def get_notification_services(
+    db: Session = _DEFAULT_SESSION_DEPENDENCY,
+    sender: NotificationSender = _DEFAULT_SENDER_DEPENDENCY,
+) -> NotificationService:
     repository = SQLAlchemyNotificationRepository(db)
-    return NotificationService(repository)
+    return NotificationService(repository, sender)
 
 
 _DEFAULT_NOTIFICATION_SERVICE_DEPENDENCY = Depends(get_notification_services)
@@ -37,7 +49,7 @@ _DEFAULT_CURRENT_USER_DEPENDENCY = Depends(get_current_user)
 @router.post(
     "/", response_model=NotificationResponse, description="Create a notifiaction"
 )
-def create_notification(
+async def create_notification(
     notification: NotificationCreate,
     notification_service: NotificationService = _DEFAULT_NOTIFICATION_SERVICE_DEPENDENCY,
     user: dict = _DEFAULT_CURRENT_USER_DEPENDENCY,
@@ -59,7 +71,9 @@ def create_notification(
         sent_at=None,
         error_message=None,
     )
-    created_notification = notification_service.create_notification(new_notification)
+    created_notification = await notification_service.create_notification(
+        new_notification
+    )
 
     return NotificationResponse.model_validate(created_notification)
 
