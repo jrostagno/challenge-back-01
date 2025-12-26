@@ -19,7 +19,13 @@ services:
       timeout: 3s
       retries: 20
 
-
+  delivery-service:
+    build:
+      context: ./delivery-service
+      dockerfile: Dockerfile
+    container_name: delivery_service
+    ports:
+      - "8001:8001"
   app:
     build:
       context: .
@@ -28,11 +34,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+      delivery-service:
+        condition: service_started
     ports:
       - "8000:8000"
     environment:
       # 👇 Muy importante: que la app hable con el host "db" del compose, NO localhost
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+      DELIVERY_SERVICE_URL: http://delivery-service:8001
+      
     command: >
       sh -c "alembic -c app/alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
     # Si querés también:
