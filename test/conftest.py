@@ -7,6 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
+from app.api.notification.notification_controller import get_notification_sender
+from app.domain.notification.ports.notification_sender import SendResult
 from app.infraestructure.db.base import Base
 from app.infraestructure.db.session import get_session
 from app.main import app
@@ -25,6 +27,25 @@ TestingSessionLocal = sessionmaker[Session](
     autoflush=False,
     bind=engine,
 )
+
+
+# ---------  FakeSender para mockear la API externa ---------
+
+
+class FakeSender:
+    """
+    Simula el delivery-service externo.
+    Siempre 'envía' ok para simplificar.
+    Si algún test necesita error, podés crear otra clase o
+    parametrizar esto.
+    """
+
+    def __init__(self):
+        self.called = False
+
+    def send(self, notification):
+        self.called = True
+        return SendResult(status="sent")
 
 
 # Fixture : Create all tables in the database for testing
@@ -105,6 +126,9 @@ def client(db_session):
             pass
 
     app.dependency_overrides[get_session] = override_get_db
+
+    # 👉 Mock de la dependencia externa (delivery-service)
+    app.dependency_overrides[get_notification_sender] = lambda: FakeSender()
 
     with TestClient(app) as client:
         yield client

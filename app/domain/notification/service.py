@@ -1,16 +1,43 @@
 from datetime import datetime
 
-from app.domain.notification.entities import Notification, NotificationUpdate
+from app.domain.notification.entities import (
+    Notification,
+    NotificationStatus,
+    NotificationUpdate,
+)
 from app.domain.notification.exceptions import NotificationNotFoundError
+from app.domain.notification.ports.notification_sender import NotificationSender
 from app.domain.notification.repository import NotificationRepository
 
 
 class NotificationService:
-    def __init__(self, notification_repository: NotificationRepository):
+    def __init__(
+        self,
+        notification_repository: NotificationRepository,
+        sender: NotificationSender,
+    ):
         self.notification_repository = notification_repository
+        self.sender = sender
 
-    def create_notification(self, notification: Notification) -> Notification:
-        return self.notification_repository.create_notification(notification)
+    async def create_notification(self, notification: Notification) -> Notification:
+        created = self.notification_repository.create_notification(notification)
+
+        # Enviar (dependencia externa)
+        result = await self.sender.send(created)
+
+        now = datetime.now()
+        created.updated_at = now
+
+        if result.status == "sent":
+            created.status = NotificationStatus.SENT
+            created.sent_at = result.sent_at or now
+            created.error_message = None
+        else:
+            created.status = NotificationStatus.ERROR
+            created.sent_at = None
+            created.error_message = result.error_message or "Delivery error"
+
+        return self.notification_repository.update_notification(created)
 
     def update_notification(
         self, notification_id: int, notification: NotificationUpdate

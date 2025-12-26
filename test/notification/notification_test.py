@@ -1,3 +1,6 @@
+from app.domain.notification.entities import NotificationStatus
+
+
 def test_create_notification(client, auth_headers):
 
     response = client.post(
@@ -16,6 +19,24 @@ def test_create_notification(client, auth_headers):
     assert notification["title"] == "notificacion de prueba"
     assert notification["channel"] == "email"
     assert notification["target"] == "juan@pedro.com"
+
+
+def test_create_notification_marks_sent(client, auth_headers):
+    res = client.post(
+        "/notification/",
+        headers=auth_headers,
+        json={
+            "title": "test",
+            "content": "msg",
+            "channel": "email",
+            "target": "test@mail.com",
+        },
+    )
+
+    assert res.status_code == 200
+    body = res.json()
+
+    assert body["status"] == NotificationStatus.SENT.value
 
 
 def test_update_notification(client, auth_headers, created_notification):
