@@ -2,6 +2,7 @@ from datetime import datetime
 
 from app.domain.notification.entities import (
     Notification,
+    NotificationChannel,
     NotificationStatus,
     NotificationUpdate,
 )
@@ -21,6 +22,9 @@ class NotificationService:
 
     async def create_notification(self, notification: Notification) -> Notification:
         created = self.notification_repository.create_notification(notification)
+
+        if created.channel == NotificationChannel.SMS and len(created.content) > 160:
+            created.content = created.content[:160]
 
         # Enviar (dependencia externa)
         result = await self.sender.send(created)

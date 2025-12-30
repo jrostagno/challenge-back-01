@@ -43,9 +43,25 @@ class FakeSender:
     def __init__(self):
         self.called = False
 
-    def send(self, notification):
+    async def send(self, notification):
         self.called = True
         return SendResult(status="sent")
+
+
+class SpySender:
+    def __init__(self):
+        self.called = False
+        self.last_notification = None
+
+    async def send(self, notification):
+        self.called = True
+        self.last_notification = notification
+        return SendResult(status="sent")
+
+
+class ErrorSender:
+    async def send(self, notification):
+        return SendResult(status="error", error_message="delivery failed")
 
 
 # Fixture : Create all tables in the database for testing

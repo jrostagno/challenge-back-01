@@ -1,9 +1,10 @@
+from app.api.notification.notification_controller import get_notification_sender
 from app.domain.notification.entities import NotificationStatus
+from test.conftest import ErrorSender, SpySender
 
 
-def test_create_notification(client, auth_headers):
-
-    response = client.post(
+def test_create_notification_happy_path(client, auth_headers):
+    res = client.post(
         "/notification/",
         headers=auth_headers,
         json={
@@ -14,29 +15,81 @@ def test_create_notification(client, auth_headers):
         },
     )
 
-    assert response.status_code == 200
-    notification = response.json()
+    # 👇 si falla, te muestra el json de error
+    assert res.status_code == 200, res.json()
+
+    notification = res.json()
     assert notification["title"] == "notificacion de prueba"
     assert notification["channel"] == "email"
     assert notification["target"] == "juan@pedro.com"
+    # 👇 y acá validás el efecto de la “API externa”
+    assert notification["status"] == NotificationStatus.SENT.value
 
 
-def test_create_notification_marks_sent(client, auth_headers):
+def test_notification_marked_error_when_sender_fails(client, auth_headers):
+    client.app.dependency_overrides[get_notification_sender] = lambda: ErrorSender()
+
     res = client.post(
         "/notification/",
         headers=auth_headers,
         json={
             "title": "test",
-            "content": "msg",
+            "content": "mensaje válido",
             "channel": "email",
             "target": "test@mail.com",
         },
     )
 
-    assert res.status_code == 200
+    assert res.status_code == 200, res.json()
     body = res.json()
+    assert body["status"] == NotificationStatus.ERROR.value
+    assert body["error_message"] == "delivery failed"
 
-    assert body["status"] == NotificationStatus.SENT.value
+
+def test_sender_is_called_with_correct_data(client, auth_headers):
+    spy = SpySender()
+    client.app.dependency_overrides[get_notification_sender] = lambda: spy
+
+    res = client.post(
+        "/notification/",
+        headers=auth_headers,
+        json={
+            "title": "titulo",
+            "content": "mensaje válido",
+            "channel": "email",
+            "target": "test@mail.com",
+        },
+    )
+
+    assert res.status_code == 200, res.json()
+    assert spy.called is True
+    assert spy.last_notification is not None
+    assert spy.last_notification.title == "titulo"
+    assert spy.last_notification.channel == "email"
+    assert spy.last_notification.target == "test@mail.com"
+
+
+def test_sms_content_is_truncated_before_sending(client, auth_headers):
+    spy = SpySender()
+    client.app.dependency_overrides[get_notification_sender] = lambda: spy
+
+    long_text = "x" * 500
+
+    res = client.post(
+        "/notification/",
+        headers=auth_headers,
+        json={
+            "title": "titulo",
+            "content": long_text,
+            "channel": "sms",
+            "target": "+5491112345678",
+        },
+    )
+
+    assert res.status_code == 200, res.json()
+    assert spy.called is True
+    assert spy.last_notification is not None
+    assert len(spy.last_notification.content) <= 160
 
 
 def test_update_notification(client, auth_headers, created_notification):
