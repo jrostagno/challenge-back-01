@@ -29,7 +29,7 @@ def health():
 async def deliver(req: DeliveryRequest):
     try:
         sender = registry.get(req.channel)
-        return sender.send(req)
+        return await sender.send(req)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from None
     except Exception as e:

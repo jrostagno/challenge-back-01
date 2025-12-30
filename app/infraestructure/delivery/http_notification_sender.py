@@ -3,7 +3,7 @@ from datetime import datetime
 
 import httpx
 
-from app.domain.notification.entities import Notification
+from app.domain.notification.entities import Notification, NotificationChannel
 from app.domain.notification.ports.notification_sender import (
     NotificationSender,
     SendResult,
@@ -18,9 +18,21 @@ class HttpNotificationSender(NotificationSender):
         self.timeout = timeout_seconds
 
     async def send(self, notification: Notification) -> SendResult:
+        if notification.notification_id is None:
+            return SendResult(
+                status="error",
+                error_message="Notification ID is required but was not set",
+            )
+
+        channel = notification.channel
+        if isinstance(channel, NotificationChannel):
+            channel_value = channel.value
+        else:
+            channel_value = str(channel)
+
         payload = {
-            "notification_id": notification.notification_id,
-            "channel": notification.channel.value,
+            "notification_id": str(notification.notification_id),
+            "channel": channel_value,
             "target": notification.target,
             "title": notification.title,
             "content": notification.content,
