@@ -85,6 +85,54 @@ This project uses **Alembic** to manage database schema migrations.
 alembic upgrade head
 ```
 
+## External Delivery Service (Mock Microservice)
+
+This project includes a second microservice called delivery-service, used to simulate an external notification delivery provider.
+
+It is implemented as a separate FastAPI application and is started automatically when running the project using Docker.
+
+The Notification API communicates with this service when a notification is created, in order to simulate real-world message delivery (email / SMS / push).
+
+### What this service does
+
+-Receives delivery requests from the main API
+
+-Applies basic channel-specific delivery rules (SMS, email, push)
+
+-Returns a delivery result (sent / error)
+
+-Acts as an external dependency for integration testing
+
+This enables:
+
+-Testing real communication between services
+
+-Simulating provider success / failure scenarios
+
+-Mocking the dependency in automated tests
+
+### How it runs
+
+The service is built and started automatically via Docker Compose:
+
+```bash
+app (port 8000)
+delivery-service (port 8001)
+postgres
+```
+
+The main API communicates internally using:
+
+```bash
+http://delivery-service:8001/deliver
+```
+
+In local mode, no additional setup is required — simply run:
+
+```bash
+./up_dev.sh
+```
+
 ## Areas to improve
 
 - Move test data to external fixtures or factory modules
