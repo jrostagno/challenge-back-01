@@ -135,7 +135,7 @@ In local mode, no additional setup is required — simply run:
 
 ## Areas to improve
 
-- Move test data to external fixtures or factory modules
+- The folder structure could be improved by using feature modules instead of architectural layers. This would make it more scalable.
 - Generic method should be used to mock endpoints
 - Error handling could be improved (I.E handle already existing user error)
 - Add seed data for easier local testing
